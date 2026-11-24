@@ -28,7 +28,7 @@ gunicorn helpdesk_site.wsgi:application \
   --timeout "${GUNICORN_TIMEOUT:-60}" --graceful-timeout 10 \
   --max-requests 1000 --max-requests-jitter 100 \
   --preload --access-logfile - --error-logfile - --log-level warning \
-  --forwarded-allow-ips '*' &
+  --forwarded-allow-ips '*' --no-control-socket &
 gpid=$!
 echo "[start] gunicorn pid $gpid on port $port ($workers workers x $threads threads, $cpus CPU)"
 
