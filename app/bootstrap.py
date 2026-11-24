@@ -38,7 +38,7 @@ def wait_for_db(timeout=180):
             if time.monotonic() > deadline:
                 log(f"database not reachable after {timeout}s: {exc}")
                 sys.exit(1)
-            log("waiting for the database...")
+            log(f"waiting for the database... ({type(exc).__name__})")
             time.sleep(3)
             connection.close()
 
@@ -95,6 +95,7 @@ def setup():
 
 
 if __name__ == "__main__":
+    log("starting setup")
     wait_for_db()
     with_lock(setup)
     log("setup complete")

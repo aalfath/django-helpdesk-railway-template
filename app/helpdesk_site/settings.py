@@ -117,6 +117,8 @@ DATABASES = {
         conn_health_checks=True,
     )
 }
+# Never hang on a Postgres that is still starting or moving (Railway private DNS).
+DATABASES["default"].setdefault("OPTIONS", {})["connect_timeout"] = int(os.environ.get("DB_CONNECT_TIMEOUT", "10"))
 
 SITE_ID = 1
 
