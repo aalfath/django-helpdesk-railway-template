@@ -1,13 +1,13 @@
-# Local test only (not used by Railway): app + Postgres + MinIO standing in for a Railway Bucket.
+# Local test only (not used by Railway): app + Postgres + SeaweedFS S3 standing in for a Railway Bucket.
 services:
   postgres:
     image: postgres:17
     environment: {POSTGRES_PASSWORD: localtest, POSTGRES_DB: railway}
     volumes: [pg:/var/lib/postgresql/data]
-  minio:
-    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
-    command: server /data
-    environment: {MINIO_ROOT_USER: localminio, MINIO_ROOT_PASSWORD: localminio123}
+  s3:
+    image: chrislusf/seaweedfs:3.99
+    command: server -s3 -s3.config=/etc/s3.json -dir=/data
+    configs: [{source: s3cfg, target: /etc/s3.json}]
   app:
     build: .
     mem_limit: 512m
@@ -21,10 +21,14 @@ services:
       DJANGO_SUPERUSER_PASSWORD: local-test-password-123
       DJANGO_SECURE_COOKIES: "false"
       AWS_STORAGE_BUCKET_NAME: ${BUCKET:-}
-      AWS_S3_ENDPOINT_URL: http://minio:9000
+      AWS_S3_ENDPOINT_URL: http://s3:8333
       AWS_S3_REGION_NAME: us-east-1
       AWS_S3_ADDRESSING_STYLE: path
-      AWS_ACCESS_KEY_ID: localminio
-      AWS_SECRET_ACCESS_KEY: localminio123
+      AWS_ACCESS_KEY_ID: localkey
+      AWS_SECRET_ACCESS_KEY: localsecret123
     depends_on: [postgres]
 volumes: {pg: {}}
+configs:
+  s3cfg:
+    content: |
+      {"identities":[{"name":"t","credentials":[{"accessKey":"localkey","secretKey":"localsecret123"}],"actions":["Admin","Read","Write","List","Tagging"]}]}
